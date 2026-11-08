@@ -12,4 +12,6 @@ router.get('/', notesController.getAllNotes);
 
 router.get('/:id', notesController.getNoteById);
 
+router.put('/:id', validateRequest(createNoteSchema), notesController.update);
+
 export default router;

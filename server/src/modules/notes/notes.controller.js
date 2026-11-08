@@ -27,3 +27,18 @@ export function getNoteById(req, res) {
     });
 };
 
+export async function update(req, res, next) {
+    try {
+        const note = await noteServices.updateNote(
+            req.params.id,
+            req.body.rawContent
+        );
+
+        res.status(200).json({
+            success: true,
+            data: note,
+        })
+    } catch (error) {
+        next(error);
+    }
+}

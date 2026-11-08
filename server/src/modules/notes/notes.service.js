@@ -29,3 +29,17 @@ export function getNoteById(id) {
 
     return note;
 };
+
+export async function updateNote(id, rawContent) {
+    const existingNote = notesRepository.findById(id);
+
+    if (!existingNote) {
+        const error = new Error('Note not found');
+        error.statusCode = 404;
+        throw error;
+    }
+
+    const updatedAt = new Date().toISOString();
+
+    return notesRepository.update(id, rawContent, updatedAt);
+}

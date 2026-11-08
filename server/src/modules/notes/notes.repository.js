@@ -49,3 +49,20 @@ export function findAll() {
         ORDER BY created_at DESC
     `).all();
 };
+
+export function update(id, rawContent, updatedAt) {
+    const db = getDatabase();
+    const statement = db.prepare(`
+        UPDATE notes 
+        SET raw_content = ?, updated_at = ?
+        WHERE id = ?    
+    `);
+
+    const result = statement.run(rawContent, updatedAt, id);
+
+    if (result.changes === 0) {
+        return null;
+    }
+
+    return findById(id);
+}

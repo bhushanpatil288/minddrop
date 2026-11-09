@@ -32,5 +32,12 @@ export const notesApi = {
 
     getById(id) {
         return request(`/notes/${id}`);
+    },
+
+    update(id, rawContent) {
+        return request(`/notes/${id}`, {
+            method: 'PUT',
+            body: JSON.stringify({ rawContent }),
+        });
     }
 }

@@ -46,12 +46,35 @@ export function useNotes() {
         }
     }
 
+    const updateNote = async (id, rawContent) => {
+        try {
+            setSaving(true);
+            setError(null);
+
+            const updatedNote = await notesApi.update(id, rawContent);
+
+            setNotes((prevNotes) =>
+                prevNotes.map((note) =>
+                    note.id === id ? updatedNote : note
+                )
+            );
+
+            return updatedNote;
+        } catch (err) {
+            setError(err.message);
+            throw err;
+        } finally {
+            setSaving(false)
+        }
+    }
+
     return {
         notes,
         loading,
         saving,
         error,
         createNote,
+        updateNote,
         refreshNotes: fetchNotes,
     }
 }

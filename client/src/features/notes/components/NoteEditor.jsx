@@ -49,8 +49,10 @@ export default function NoteEditor({
 
                 <textarea
                     value={value}
-                    onChange={(event) => onChange(event.target.value)}
-                    readOnly={isSavedNote}
+                    onChange={(event) => {
+                        onChange(event.target.value)
+                        console.log(event.target.value)
+                    }}
                     placeholder="Start typing anything... an idea, something you learned, a random thought, a task, or an observation."
                     spellCheck
                     className="min-h-[300px] flex-1 resize-none bg-transparent text-base leading-8 text-neutral-700 outline-none placeholder:text-neutral-300"
@@ -60,16 +62,13 @@ export default function NoteEditor({
                     <span className="text-xs text-neutral-400">
                         {wordCount} words · {value.length} characters
                     </span>
-
-                    {!isSavedNote && (
-                        <button
-                            onClick={onSave}
-                            disabled={!value.trim() || saving}
-                            className="rounded-xl bg-neutral-900 px-5 py-3 text-sm font-medium text-white transition hover:bg-neutral-700 disabled:cursor-not-allowed disabled:opacity-40"
-                        >
-                            {saving ? 'Saving...' : 'Save note'}
-                        </button>
-                    )}
+                    <button
+                        onClick={onSave}
+                        disabled={!value.trim() || saving}
+                        className="rounded-xl bg-neutral-900 px-5 py-3 text-sm font-medium text-white transition hover:bg-neutral-700 disabled:cursor-not-allowed disabled:opacity-40"
+                    >
+                        {saving ? 'Saving...' : 'Save note'}
+                    </button>
                 </footer>
 
                 {error && (

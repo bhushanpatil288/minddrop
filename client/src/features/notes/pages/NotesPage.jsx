@@ -14,6 +14,7 @@ export default function NotesPage() {
         saving,
         error,
         createNote,
+        updateNote
     } = useNotes()
 
     const [draft, setDraft] = useState('')
@@ -32,17 +33,37 @@ export default function NotesPage() {
         setDraft('')
     }
 
+    const handleSelectNote = (note) => {
+        setActiveNoteId(note.id)
+        setDraft(note.rawContent)
+    }
+
     async function handleSave() {
-        if (!draft.trim() || saving) return
+        const content = draft.trim();
+
+        if (!content) return;
 
         try {
-            const note = await createNote(draft)
-
-            setActiveNoteId(note.id)
-            setDraft('')
-        } catch {
-            // The hook maintains the error state.
+            if (activeNoteId) {
+                await updateNote(activeNoteId, content);
+            } else {
+                const note = await createNote(content);
+                setActiveNoteId(note.id);
+            }
+        } catch (err) {
+            console.error('Failed to save note: ', err);
         }
+
+        // if (!draft.trim() || saving) return
+
+        // try {
+        //     const note = await createNote(draft)
+
+        //     setActiveNoteId(note.id)
+        //     setDraft('')
+        // } catch {
+        //     // The hook maintains the error state.
+        // }
     }
 
     return (
@@ -72,7 +93,8 @@ export default function NotesPage() {
                         notes={notes}
                         loading={loading}
                         activeNoteId={activeNoteId}
-                        onSelect={(note) => setActiveNoteId(note.id)}
+                        onSelect={handleSelectNote}
+                    // handleSelect={handleSelectNote}
                     />
                 </div>
 
@@ -85,7 +107,7 @@ export default function NotesPage() {
             </aside>
 
             <NoteEditor
-                value={currentContent}
+                value={draft}
                 onChange={setDraft}
                 onSave={handleSave}
                 onNewNote={handleNewNote}

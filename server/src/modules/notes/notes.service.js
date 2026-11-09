@@ -43,3 +43,15 @@ export async function updateNote(id, rawContent) {
 
     return notesRepository.update(id, rawContent, updatedAt);
 }
+
+export async function deleteNote(id) {
+    const deleted = notesRepository.deleteNote(id);
+
+    if (!deleted) {
+        const error = new Error('Note not found');
+        error.statusCode = 404;
+        throw error;
+    };
+
+    return { id };
+}

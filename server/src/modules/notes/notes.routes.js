@@ -14,4 +14,6 @@ router.get('/:id', notesController.getNoteById);
 
 router.put('/:id', validateRequest(createNoteSchema), notesController.update);
 
+router.delete('/:id', notesController.remove);
+
 export default router;

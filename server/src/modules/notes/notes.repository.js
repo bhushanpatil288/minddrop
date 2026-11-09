@@ -66,3 +66,15 @@ export function update(id, rawContent, updatedAt) {
 
     return findById(id);
 }
+
+export function deleteNote(id) {
+    const db = getDatabase();
+    const statement = db.prepare(`
+        DELETE FROM notes
+        WHERE id = ?
+    `);
+
+    const result = statement.run(id);
+
+    return result.changes > 0;
+};

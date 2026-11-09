@@ -5,6 +5,7 @@ export default function NoteList({
     activeNoteId,
     onSelect,
     loading,
+    onDelete,
 }) {
     return (
         <section className="flex h-full flex-col">
@@ -37,6 +38,7 @@ export default function NoteList({
                         note={note}
                         active={note.id === activeNoteId}
                         onClick={() => onSelect(note)}
+                        onDelete={() => onDelete(note.id)}
                     />
                 ))}
             </div>

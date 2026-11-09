@@ -68,6 +68,24 @@ export function useNotes() {
         }
     }
 
+    const deleteNote = async (id) => {
+        try {
+            setSaving(true);
+            setError(null);
+
+            await notesApi.remove(id);
+
+            setNotes(prevNotes =>
+                prevNotes.filter(note => note.id !== id)
+            );
+        } catch (err) {
+            setError(err.message);
+            throw err;
+        } finally {
+            setSaving(false);
+        }
+    }
+
     return {
         notes,
         loading,
@@ -75,6 +93,7 @@ export function useNotes() {
         error,
         createNote,
         updateNote,
+        deleteNote,
         refreshNotes: fetchNotes,
     }
 }

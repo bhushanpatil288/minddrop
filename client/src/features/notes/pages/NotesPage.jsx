@@ -14,7 +14,8 @@ export default function NotesPage() {
         saving,
         error,
         createNote,
-        updateNote
+        updateNote,
+        deleteNote
     } = useNotes()
 
     const [draft, setDraft] = useState('')
@@ -66,6 +67,28 @@ export default function NotesPage() {
         // }
     }
 
+    async function handleDeleteNote(noteId) {
+        const confirmed = window.confirm(
+            'Are you sure you want to delete this note?'
+        )
+
+        if (!confirmed) return;
+
+        try {
+            await deleteNote(noteId);
+
+            // If the deleted note was open,
+            // return to the new note screen
+
+            if (activeNoteId === noteId) {
+                setActiveNoteId(null);
+                setDraft('');
+            }
+        } catch (err) {
+            console.error('Failed to delete note: ', err);
+        }
+    }
+
     return (
         <main className="flex h-screen overflow-hidden bg-[#f8f7f4]">
             <aside className="flex w-full max-w-[300px] shrink-0 flex-col border-r border-neutral-200 bg-white max-sm:hidden">
@@ -94,6 +117,7 @@ export default function NotesPage() {
                         loading={loading}
                         activeNoteId={activeNoteId}
                         onSelect={handleSelectNote}
+                        onDelete={handleDeleteNote}
                     // handleSelect={handleSelectNote}
                     />
                 </div>
@@ -111,6 +135,7 @@ export default function NotesPage() {
                 onChange={setDraft}
                 onSave={handleSave}
                 onNewNote={handleNewNote}
+                onDelete={handleDeleteNote}
                 saving={saving}
                 selectedNote={activeNote}
                 error={error}

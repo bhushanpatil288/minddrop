@@ -39,5 +39,11 @@ export const notesApi = {
             method: 'PUT',
             body: JSON.stringify({ rawContent }),
         });
-    }
+    },
+
+    remove(id) {
+        return request(`/notes/${id}`, {
+            method: 'DELETE'
+        })
+    },
 }

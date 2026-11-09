@@ -3,6 +3,7 @@ export default function NoteEditor({
     onChange,
     onSave,
     onNewNote,
+    onDelete,
     saving,
     selectedNote,
     error,

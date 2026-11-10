@@ -20,3 +20,17 @@ export async function checkOllamaStatus() {
         ) ?? false,
     }
 }
+
+import { generateWithOllama } from './ai.provider.js'
+import { buildNoteOptimizationPrompt } from './ai.prompts.js'
+import { parseOptimizedNote } from './ai.validation.js'
+
+export async function optimizeNote(rawContent) {
+    const prompt = buildNoteOptimizationPrompt(rawContent)
+
+    const rawResponse = await generateWithOllama(prompt)
+
+    const optimizedNote = parseOptimizedNote(rawResponse)
+
+    return optimizedNote
+}

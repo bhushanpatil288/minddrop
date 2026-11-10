@@ -7,6 +7,8 @@ import NoteEditor from '../components/NoteEditor'
 
 import StatusIndicator from '../../../shared/components/StatusIndicator'
 
+import { useDraftPersistence } from '../hooks/useDraftPersistence';
+
 export default function NotesPage() {
     const {
         notes,
@@ -18,53 +20,69 @@ export default function NotesPage() {
         deleteNote
     } = useNotes()
 
-    const [draft, setDraft] = useState('')
-    const [activeNoteId, setActiveNoteId] = useState(null)
+    const { draftState, setDraftState } = useDraftPersistence();
+    const { content: draft, activeNoteId, hydrated } = draftState;
+
+    const handleDraftChanges = (content) => {
+        setDraftState((prev) => ({
+            ...prev,
+            content,
+            isDirty: true,
+        }))
+    }
 
     const activeNote = notes.find(
         (note) => note.id === activeNoteId
     )
 
-    const currentContent = activeNote
-        ? activeNote.rawContent
-        : draft
-
     function handleNewNote() {
-        setActiveNoteId(null)
-        setDraft('')
+        setDraftState({
+            content: '',
+            activeNoteId: null,
+            hydrated: true,
+            isDirty: false,
+        })
     }
 
     const handleSelectNote = (note) => {
-        setActiveNoteId(note.id)
-        setDraft(note.rawContent)
+        if (draftState.isDirty) {
+            const confirmed = window.confirm(
+                'You have unsaved changes. Discard them and open another note?'
+            )
+
+            if (!confirmed) return;
+        }
+        setDraftState({
+            content: note.rawContent,
+            activeNoteId: note.id,
+            hydrated: true,
+            isDirty: false,
+        })
     }
 
     async function handleSave() {
         const content = draft.trim();
 
-        if (!content) return;
+        if (!content || saving) return;
 
         try {
             if (activeNoteId) {
                 await updateNote(activeNoteId, content);
             } else {
                 const note = await createNote(content);
-                setActiveNoteId(note.id);
+                setDraftState(prev => ({
+                    ...prev,
+                    activeNoteId: note.id,
+                }))
             }
+
+            setDraftState(prev => ({
+                ...prev,
+                isDirty: false
+            }))
         } catch (err) {
             console.error('Failed to save note: ', err);
         }
-
-        // if (!draft.trim() || saving) return
-
-        // try {
-        //     const note = await createNote(draft)
-
-        //     setActiveNoteId(note.id)
-        //     setDraft('')
-        // } catch {
-        //     // The hook maintains the error state.
-        // }
     }
 
     async function handleDeleteNote(noteId) {
@@ -81,12 +99,20 @@ export default function NotesPage() {
             // return to the new note screen
 
             if (activeNoteId === noteId) {
-                setActiveNoteId(null);
-                setDraft('');
+                setDraftState({
+                    content: '',
+                    activeNoteId: null,
+                    hydrated: true,
+                    isDirty: false,
+                })
             }
         } catch (err) {
             console.error('Failed to delete note: ', err);
         }
+    }
+
+    if (!hydrated) {
+        return <div className="p-8">Restoring your workspace...</div>
     }
 
     return (
@@ -132,7 +158,7 @@ export default function NotesPage() {
 
             <NoteEditor
                 value={draft}
-                onChange={setDraft}
+                onChange={handleDraftChanges}
                 onSave={handleSave}
                 onNewNote={handleNewNote}
                 onDelete={handleDeleteNote}

@@ -34,3 +34,48 @@ export async function optimizeNote(rawContent) {
 
     return optimizedNote
 }
+
+
+import * as notesRepository from '../notes/notes.repository.js'
+import * as noteVersionsRepository from './repositories/noteVersions.repository.js'
+
+
+const PROMPT_VERSION = '1.0'
+
+export async function generateAndSaveNoteVersion(noteId, rawContent) {
+    // 1. Verify that the original note exists.
+    const note = notesRepository.findById(noteId)
+
+    if (!note) {
+        const error = new Error('Note not found')
+        error.statusCode = 404
+        throw error
+    }
+
+    // 2. Generate the structured result.
+    const optimizedNote = await optimizeNote(rawContent)
+
+    // 3. Save the generated version.
+    const savedVersion = noteVersionsRepository.create({
+        noteId,
+        sourceContent: rawContent,
+        optimizedNote,
+        modelName: env.OLLAMA_MODEL,
+        promptVersion: PROMPT_VERSION,
+    })
+
+    return savedVersion
+}
+
+
+export async function getNoteVersions(noteId) {
+    const note = notesRepository.findById(noteId)
+
+    if (!note) {
+        const error = new Error('Note not found')
+        error.statusCode = 404
+        throw error
+    }
+
+    return noteVersionsRepository.findAllByNoteId(noteId)
+}

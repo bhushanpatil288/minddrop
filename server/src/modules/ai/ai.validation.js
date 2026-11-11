@@ -42,3 +42,8 @@ export function parseOptimizedNote(rawResponse) {
 export const optimizeNoteRequestSchema = z.object({
     rawContent: z.string().trim().min(1).max(100000),
 })
+
+
+export const noteIdParamsSchema = z.object({
+    noteId: z.string().uuid(),
+})

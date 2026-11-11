@@ -1,4 +1,6 @@
-import { useState } from 'react'
+import { useNoteAI } from '../../ai/hooks/useNoteAI'
+import { useEffect } from 'react'
+import AIResultPanel from '../../ai/components/AIResultPanel'
 
 import { useNotes } from '../hooks/useNotes'
 
@@ -20,6 +22,19 @@ export default function NotesPage() {
         deleteNote
     } = useNotes()
 
+    const {
+        generating,
+        loadingVersions,
+        versions,
+        activeVersion,
+        error: aiError,
+        generateVersion,
+        loadVersions,
+        selectVersion,
+        clearAIState,
+    } = useNoteAI()
+
+
     const { draftState, setDraftState } = useDraftPersistence();
     const { content: draft, activeNoteId, hydrated } = draftState;
 
@@ -36,22 +51,33 @@ export default function NotesPage() {
     )
 
     function handleNewNote() {
+        if (draftState.isDirty) {
+            const confirmed = window.confirm(
+                'Discard your unsaved changes and start a new note?'
+            )
+
+            if (!confirmed) return
+        }
+
         setDraftState({
             content: '',
             activeNoteId: null,
             hydrated: true,
             isDirty: false,
         })
+
+        clearAIState()
     }
 
-    const handleSelectNote = (note) => {
+    const handleSelectNote = async (note) => {
         if (draftState.isDirty) {
             const confirmed = window.confirm(
                 'You have unsaved changes. Discard them and open another note?'
             )
 
-            if (!confirmed) return;
+            if (!confirmed) return
         }
+
         setDraftState({
             content: note.rawContent,
             activeNoteId: note.id,
@@ -111,6 +137,26 @@ export default function NotesPage() {
         }
     }
 
+
+
+    async function handleOptimize() {
+        if (!activeNoteId || !draft.trim() || generating) return
+
+        try {
+            await generateVersion(activeNoteId, draft.trim())
+        } catch (err) {
+            console.error('AI optimization failed:', err)
+        }
+    }
+
+    useEffect(() => {
+        if (!hydrated || !activeNoteId) return
+
+        loadVersions(activeNoteId).catch((err) => {
+            console.error('Failed to restore AI versions:', err)
+        })
+    }, [hydrated, activeNoteId, loadVersions])
+
     if (!hydrated) {
         return <div className="p-8">Restoring your workspace...</div>
     }
@@ -156,16 +202,31 @@ export default function NotesPage() {
                 </div>
             </aside>
 
-            <NoteEditor
-                value={draft}
-                onChange={handleDraftChanges}
-                onSave={handleSave}
-                onNewNote={handleNewNote}
-                onDelete={handleDeleteNote}
-                saving={saving}
-                selectedNote={activeNote}
-                error={error}
-            />
+            <div className="flex min-w-0 flex-1 overflow-hidden">
+                <NoteEditor
+                    value={draft}
+                    onChange={handleDraftChanges}
+                    onSave={handleSave}
+                    onNewNote={handleNewNote}
+                    onDelete={handleDeleteNote}
+                    onOptimize={handleOptimize}
+                    saving={saving}
+                    optimizing={generating}
+                    selectedNote={activeNote}
+                    error={error}
+                />
+
+                <aside className="hidden w-[380px] shrink-0 overflow-y-auto border-l border-neutral-200 bg-white p-5 xl:block">
+                    <AIResultPanel
+                        version={activeVersion}
+                        versions={versions}
+                        generating={generating}
+                        loadingVersions={loadingVersions}
+                        error={aiError}
+                        onSelectVersion={selectVersion}
+                    />
+                </aside>
+            </div>
         </main>
     )
 }

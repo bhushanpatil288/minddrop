@@ -1,49 +1,31 @@
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
-
-async function request(endpoing, options = {}) {
-    const res = await fetch(`${API_BASE_URL}${endpoing}`, {
-        ...options,
-        headers: {
-            'Content-Type': 'application/json',
-            ...options.headers,
-        },
-    })
-
-    const data = await res.json();
-
-    if (!res.ok) {
-        throw new Error(data.message || 'Something went wrong');
-    };
-
-    return data.data;
-}
+import { apiRequest } from '../../../shared/services/apiClient'
 
 export const notesApi = {
     getAll() {
-        return request('/notes');
+        return apiRequest('/notes')
     },
 
     create(rawContent) {
-        return request('/notes', {
+        return apiRequest('/notes', {
             method: 'POST',
             body: JSON.stringify({ rawContent }),
         })
     },
 
     getById(id) {
-        return request(`/notes/${id}`);
+        return apiRequest(`/notes/${id}`)
     },
 
     update(id, rawContent) {
-        return request(`/notes/${id}`, {
+        return apiRequest(`/notes/${id}`, {
             method: 'PUT',
             body: JSON.stringify({ rawContent }),
-        });
+        })
     },
 
-    remove(id) {
-        return request(`/notes/${id}`, {
-            method: 'DELETE'
+    delete(id) {
+        return apiRequest(`/notes/${id}`, {
+            method: 'DELETE',
         })
     },
 }
